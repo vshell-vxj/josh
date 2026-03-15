@@ -4,26 +4,25 @@ on:
   push:
     branches: [ "main" ]
     tags:
-      - 'v*'    
+      - 'v*'
   pull_request:
     branches: [ "main" ]
 
 jobs:
-  publish:
+  build:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install build dependencies (optional)
+      - name: Install build dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y build-essential gcc-multilib libc6-dev-i386 grub-pc-bin xorriso
 
-      - name: Build (optional)
+      - name: Build
         run: |
           make clean || true
           make
@@ -31,7 +30,6 @@ jobs:
       - name: Ensure ISO exists
         run: |
           if [ ! -f build/boot.iso ]; then
-            echo "Error: build/boot.iso not found"
             ls -la build || true
             exit 1
           fi
@@ -56,7 +54,7 @@ jobs:
         with:
           tag_name: ${{ steps.get_release.outputs.tag }}
           release_name: ${{ steps.get_release.outputs.tag }}
-          draft: ${{ steps.get_release.outputs.is_tag == 'false' }}
+          draft: false
           prerelease: false
           body: |
             Automated release created by GitHub Actions.
