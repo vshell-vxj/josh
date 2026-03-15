@@ -6,7 +6,6 @@ all:
 	@gcc -c src/entry.c -o build/entry.o $(CCFLAGSC)
 	@gcc -c src/vga.c -o build/vga.o $(CCFLAGSC)
 	@gcc -c src/port.c -o build/port.o $(CCFLAGSC)
-	@gcc -c src/kb.c -o build/kb.o $(CCFLAGSC)
 	@rm -f build/kernel.elf
 	@cd build; gcc -T ../kernel.ld *.o -o kernel.elf $(CCFLAGSC)
 	@cp build/kernel.elf iso
