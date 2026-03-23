@@ -1,5 +1,4 @@
 name: Publish ISO to Release
-
 on:
   push:
     branches: [ "main" ]
@@ -7,7 +6,6 @@ on:
       - 'v*'
   pull_request:
     branches: [ "main" ]
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -16,27 +14,53 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Install build dependencies
         run: |
+          set -eux
           sudo apt-get update
-          sudo apt-get install -y build-essential gcc-multilib libc6-dev-i386 grub-pc-bin xorriso
-
+          # install cross-compiler toolchain and tools used by your Makefile
+          sudo apt-get install -y \
+            gcc-multilib \
+            gcc-i686-linux-gnu \
+            binutils-i686-linux-gnu \
+            lld \
+            build-essential \
+            libc6-dev-i386 \
+            grub-pc-bin \
+            xorriso
+          echo "=== tool versions ==="
+          i686-linux-gnu-gcc --version || true
+          i686-linux-gnu-ld --version || true
+          ld.lld --version || true
+          grub-mkrescue --version || true
+          xorriso --version || true
+      - name: Prepare workspace
+        run: |
+          set -eux
+          mkdir -p build iso
       - name: Build
         run: |
+          set -eux
+          # Show the Makefile and print it for debugging
+          echo "=== Makefile content ==="
+          sed -n '1,200p' Makefile || true
           make clean || true
           make
-
       - name: Ensure ISO exists
         run: |
+          set -eux
           if [ ! -f build/boot.iso ]; then
+            echo "build directory listing:"
             ls -la build || true
+            echo "iso directory listing:"
+            ls -la iso || true
+            # show output of last make (if present)
             exit 1
           fi
-
       - name: Determine release tag/name
         id: get_release
         run: |
+          set -eux
           if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
             TAG="${GITHUB_REF#refs/tags/}"
             echo "tag=${TAG}" >> $GITHUB_OUTPUT
@@ -47,7 +71,6 @@ jobs:
             echo "tag=${NAME}" >> $GITHUB_OUTPUT
             echo "is_tag=false" >> $GITHUB_OUTPUT
           fi
-
       - name: Create release
         id: create_release
         uses: actions/create-release@v1
@@ -62,7 +85,6 @@ jobs:
             Ref: ${{ github.ref }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Upload ISO to release
         uses: actions/upload-release-asset@v1
         with:
