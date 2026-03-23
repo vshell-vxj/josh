@@ -1,6 +1,6 @@
 CCFLAGS = -ffreestanding -fno-pie -no-pie
 CCFLAGSC = -ffreestanding -fno-exceptions -fno-stack-protector -fno-pie -fno-pic -fno-unwind-tables -fno-asynchronous-unwind-tables -I include -nostdlib -Wall -Wextra -fno-ident
-PREFIX = 
+PREFIX = i686-linux-gnu-
 all:
 	@mkdir build -p
 	@$(PREFIX)gcc -c src/boot.s -o build/boot.o $(CCFLAGS)
