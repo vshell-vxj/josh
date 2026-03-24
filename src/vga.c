@@ -21,6 +21,12 @@ void putc(char c) {
     if (c == '\n') {
         col = 0;
         row++;
+    } else if (c == '\b') {
+        if (col <= 0) {
+        } else {
+            col--;
+        }
+        vga_buffer[row*80+col] = (0x07 << 8) | ' ';
     } else {
         vga_buffer[row*80+col] = (0x07 << 8) | c; col++;
     }
